@@ -1,6 +1,14 @@
 import numpy as np
 
 
+def bipolar(x):
+    return 2 / (1 + np.exp(-x)) - 1
+
+
+def bipolar_derivative(x):
+    return 0.5 * (1 - bipolar(x) * bipolar(x))
+
+
 class NetworkLayer:
     # for now its for sigmo func but I will add possibility to change activation functions in future
 
@@ -13,9 +21,8 @@ class NetworkLayer:
     def calculate_errors(self, activation_values, output_values, expected_values):
         return self.activation_function_derivative(activation_values) * (expected_values - output_values)
 
-    def __init__(self, weights, thresholds):
+    def __init__(self, weights):
         self.weights = weights
-        self.thresholds = thresholds
         self.learning_const = 0.4
 
     def get_activation_values(self, inputs):
@@ -31,15 +38,12 @@ class NetworkLayer:
         print(40 * '===============')
         print('Weights:')
         print(self.weights)
-        print('Thresholds:')
-        print(self.thresholds)
         print(40 * '===============')
 
     @staticmethod
     def generate_layer(input_size, output_size):
         weights = np.random.rand(output_size, input_size)
-        thresholds = np.random.rand(output_size) * (-1)
-        return NetworkLayer(weights, thresholds)
+        return NetworkLayer(weights)
 
 
 class NeuralNetwork:
@@ -65,9 +69,9 @@ class NeuralNetwork:
         errors = layer.activation_function_derivative(a_values[-1]) * (expected_outputs - inputs[-1])
         all_errors.append(errors)
 
-        for i in range(len(self.layers)-2, -1, -1):
+        for i in range(len(self.layers) - 2, -1, -1):
             layer = self.layers[i]
-            next_layer = self.layers[i+1]
+            next_layer = self.layers[i + 1]
             r_i = len(self.layers) - 2 - i
             errors = layer.activation_function_derivative(a_values[i]) * np.matmul(all_errors[r_i], next_layer.weights)
             all_errors.append(errors)
@@ -95,4 +99,3 @@ class NeuralNetwork:
     def present(self):
         for layer in self.layers:
             layer.present()
-
